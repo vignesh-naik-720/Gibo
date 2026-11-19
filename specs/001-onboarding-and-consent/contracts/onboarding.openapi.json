@@ -1,0 +1,283 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gibo Onboarding & Consent API",
+    "version": "1.0.0",
+    "description": "API endpoints for user onboarding, granular consent capture, and first plan generation adhering to UAE PDPL."
+  },
+  "paths": {
+    "/api/v1/onboarding": {
+      "post": {
+        "summary": "Register a new user profile and submit onboarding selections",
+        "description": "Creates the User aggregate, persists granular consent grants, records lifestyle constraints, and returns initial profile status.",
+        "operationId": "RegisterOnboardingUser",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "description": "Client-generated UUIDv4 preventing duplicate account registrations during network retries.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered and initial plan generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error (e.g. age under 18 or invalid enum value)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict: Idempotency key already processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingRegistrationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/onboarding/first-plan-preview": {
+      "post": {
+        "summary": "Generate a preview of the first daily micro-action without saving",
+        "description": "Renders a tailored starter task candidate based on the user's selected domain and constraints during onboarding.",
+        "operationId": "GetFirstPlanPreview",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FirstPlanPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Preview of first starter task card",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirstPlanPreviewResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "OnboardingRegistrationRequest": {
+        "type": "object",
+        "required": [
+          "isAdultConfirmed",
+          "preferredLocale",
+          "timezoneId",
+          "primaryGoalDomain",
+          "consents"
+        ],
+        "properties": {
+          "isAdultConfirmed": {
+            "type": "boolean",
+            "description": "Must be true confirming user is at least 18 years of age."
+          },
+          "preferredLocale": {
+            "type": "string",
+            "enum": ["en", "ar", "hi"],
+            "example": "ar"
+          },
+          "timezoneId": {
+            "type": "string",
+            "example": "Asia/Dubai"
+          },
+          "primaryGoalDomain": {
+            "type": "string",
+            "enum": ["Movement", "SleepRoutine", "Nutrition"],
+            "example": "Movement"
+          },
+          "workPattern": {
+            "type": "string",
+            "enum": ["StandardDaytime", "ShiftWorker", "FlexibleOrIrregular"],
+            "default": "StandardDaytime"
+          },
+          "indoorPreferred": {
+            "type": "boolean",
+            "default": true
+          },
+          "maxDailyActions": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "default": 1
+          },
+          "quietHoursStart": {
+            "type": "string",
+            "format": "time",
+            "example": "22:00:00"
+          },
+          "quietHoursEnd": {
+            "type": "string",
+            "format": "time",
+            "example": "07:00:00"
+          },
+          "baselineFitnessLevel": {
+            "type": "string",
+            "enum": ["Starter", "Intermediate", "Active"],
+            "default": "Starter"
+          },
+          "accessibilityTags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "example": ["LowImpact", "IndoorOnly"]
+          },
+          "consents": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/ConsentItemInput"
+            }
+          }
+        }
+      },
+      "ConsentItemInput": {
+        "type": "object",
+        "required": ["category", "granted", "policyVersion"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["CoreProfile", "HealthConnectSync", "AssistantChatContext", "AnonymousResearch"]
+          },
+          "granted": {
+            "type": "boolean"
+          },
+          "policyVersion": {
+            "type": "string",
+            "example": "2026.1"
+          }
+        }
+      },
+      "OnboardingRegistrationResponse": {
+        "type": "object",
+        "required": ["userId", "status", "registeredAt", "firstPlan"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "example": "Active"
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "firstPlan": {
+            "$ref": "#/components/schemas/FirstPlanPreviewResponse"
+          }
+        }
+      },
+      "FirstPlanPreviewRequest": {
+        "type": "object",
+        "required": ["goalDomain", "baselineFitnessLevel", "indoorPreferred"],
+        "properties": {
+          "goalDomain": {
+            "type": "string",
+            "enum": ["Movement", "SleepRoutine", "Nutrition"]
+          },
+          "baselineFitnessLevel": {
+            "type": "string",
+            "enum": ["Starter", "Intermediate", "Active"]
+          },
+          "indoorPreferred": {
+            "type": "boolean"
+          },
+          "locale": {
+            "type": "string",
+            "enum": ["en", "ar", "hi"],
+            "default": "en"
+          }
+        }
+      },
+      "FirstPlanPreviewResponse": {
+        "type": "object",
+        "required": ["taskTemplateId", "verb", "target", "estimatedMinutes", "evidenceMode", "whyItFits"],
+        "properties": {
+          "taskTemplateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "instruction": {
+            "type": "string",
+            "example": "Take a 7-minute indoor walk after lunch"
+          },
+          "verb": {
+            "type": "string",
+            "example": "Walk"
+          },
+          "target": {
+            "type": "string",
+            "example": "7 minutes"
+          },
+          "estimatedMinutes": {
+            "type": "integer",
+            "example": 7
+          },
+          "evidenceMode": {
+            "type": "string",
+            "enum": ["Manual", "HealthConnect", "Both"],
+            "example": "Manual"
+          },
+          "whyItFits": {
+            "type": "string",
+            "example": "Matches your preference for indoor activity and provides a gentle starter baseline."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["errorCode", "message"],
+        "properties": {
+          "errorCode": { "type": "string" },
+          "message": { "type": "string" },
+          "details": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

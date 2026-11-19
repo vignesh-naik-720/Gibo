@@ -1,0 +1,157 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gibo Gamification & Weekly Styles API",
+    "version": "1.0.0",
+    "description": "Endpoints for immutable XP ledger, non-clinical weekly Gibo style recaps, and monthly trend insights."
+  },
+  "paths": {
+    "/api/v1/gamification/balance": {
+      "get": {
+        "summary": "Get Total XP Balance and Recent Ledger",
+        "description": "Retrieves the user's private cumulative XP and recent transaction entries.",
+        "responses": {
+          "200": {
+            "description": "XP balance successfully retrieved",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/XpBalanceDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gamification/weekly-style": {
+      "get": {
+        "summary": "Get Current Weekly Gibo Style",
+        "description": "Retrieves the user's assigned weekly style recap (Steady Builder, Curious Explorer, etc.).",
+        "responses": {
+          "200": {
+            "description": "Weekly style recap retrieved",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WeeklyInsightDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gamification/weekly-style/toggle-visibility": {
+      "put": {
+        "summary": "Toggle Weekly Style Visibility",
+        "description": "Allows user to hide or reveal the weekly style card on their dashboard.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["hide"],
+                "properties": { "hide": { "type": "boolean" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Visibility updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WeeklyInsightDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/gamification/monthly-trends": {
+      "get": {
+        "summary": "Get Monthly Trends by Provenance",
+        "description": "Retrieves monthly trend data explicitly separating wearable sensor metrics from self-reported completions.",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "example": "2026-11" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Monthly trend data retrieved",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MonthlyTrendsDto" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "XpBalanceDto": {
+        "type": "object",
+        "required": ["totalXp", "recentTransactions"],
+        "properties": {
+          "totalXp": { "type": "integer" },
+          "recentTransactions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/XpTransactionDto" }
+          }
+        }
+      },
+      "XpTransactionDto": {
+        "type": "object",
+        "required": ["transactionId", "amount", "reason", "createdAtUtc"],
+        "properties": {
+          "transactionId": { "type": "string", "format": "uuid" },
+          "amount": { "type": "integer" },
+          "reason": { "type": "string", "enum": ["TaskCompleted", "PartialCompleted", "ReflectionReward", "WeeklyMilestone"] },
+          "referenceId": { "type": "string", "nullable": true },
+          "createdAtUtc": { "type": "string", "format": "date-time" }
+        }
+      },
+      "WeeklyInsightDto": {
+        "type": "object",
+        "required": ["insightId", "weekStartDate", "actionsCompleted", "assignedStyle", "title", "encouragement", "isHiddenByUser"],
+        "properties": {
+          "insightId": { "type": "string", "format": "uuid" },
+          "weekStartDate": { "type": "string", "format": "date" },
+          "actionsCompleted": { "type": "integer" },
+          "assignedStyle": {
+            "type": "string",
+            "enum": ["ComebackChampion", "CuriousExplorer", "MindfulBalancer", "SteadyBuilder", "MomentumMaker"]
+          },
+          "title": { "type": "string" },
+          "encouragement": { "type": "string" },
+          "isHiddenByUser": { "type": "boolean" }
+        }
+      },
+      "MonthlyTrendsDto": {
+        "type": "object",
+        "required": ["monthYear", "domains"],
+        "properties": {
+          "monthYear": { "type": "string" },
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["domain", "sensorUnits", "selfReportedCount", "daysActive"],
+              "properties": {
+                "domain": { "type": "string", "enum": ["Movement", "SleepRoutine", "Nutrition"] },
+                "sensorUnits": { "type": "integer", "nullable": true },
+                "selfReportedCount": { "type": "integer" },
+                "daysActive": { "type": "integer" },
+                "observationalSummary": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

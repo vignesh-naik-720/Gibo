@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Gibo.Api/Gibo.Api.csproj" />
+  <Project Path="Gibo.Application/Gibo.Application.csproj" />
+  <Project Path="Gibo.Domain/Gibo.Domain.csproj" />
+  <Project Path="Gibo.Infrastructure/Gibo.Infrastructure.csproj" />
+</Solution>

@@ -1,0 +1,114 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gibo Grounded AI Assistant API",
+    "version": "1.0.0",
+    "description": "Contracts for 7-stage defensive RAG pipeline, safety classification, and grounded health citations."
+  },
+  "paths": {
+    "/api/v1/assistant/chat": {
+      "post": {
+        "summary": "Submit Wellness Query",
+        "description": "Executes 7-stage defensive pipeline: sanitization, safety pre-check, curated retrieval, generation, citation verification, and minimal audit logging.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AssistantQueryRequestDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verified assistant response with citations or emergency guidance",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AssistantResponseDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assistant/sources": {
+      "get": {
+        "summary": "List Approved Knowledge Sources",
+        "description": "Returns the public whitelist of clinical and public health sources backing the assistant.",
+        "responses": {
+          "200": {
+            "description": "List of approved knowledge sources",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/KnowledgeSourceDto" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssistantQueryRequestDto": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query": { "type": "string", "maxLength": 500 },
+          "conversationId": { "type": "string", "format": "uuid", "nullable": true },
+          "locale": { "type": "string", "enum": ["en", "ar", "hi"], "default": "en" }
+        }
+      },
+      "AssistantResponseDto": {
+        "type": "object",
+        "required": ["answer", "outcome", "safetyClassification"],
+        "properties": {
+          "answer": { "type": "string" },
+          "outcome": { "type": "string", "enum": ["AnsweredWithCitations", "AbstainedLowConfidence", "EmergencyHalt"] },
+          "safetyClassification": { "type": "string", "enum": ["SafeWellness", "EmergencyRedirect", "DiagnosticBoundary", "DisorderedEating", "PromptInjection"] },
+          "citations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CitationDto" }
+          },
+          "emergencyGuidance": { "$ref": "#/components/schemas/EmergencyContactsDto", "nullable": true }
+        }
+      },
+      "CitationDto": {
+        "type": "object",
+        "required": ["sourceId", "title", "organization", "publicationYear"],
+        "properties": {
+          "sourceId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "organization": { "type": "string" },
+          "publicationYear": { "type": "integer" },
+          "url": { "type": "string" }
+        }
+      },
+      "EmergencyContactsDto": {
+        "type": "object",
+        "required": ["ambulanceNumber", "policeNumber", "telehealthNumber", "message"],
+        "properties": {
+          "ambulanceNumber": { "type": "string", "example": "998" },
+          "policeNumber": { "type": "string", "example": "999" },
+          "telehealthNumber": { "type": "string", "example": "800 50" },
+          "mentalHealthNumber": { "type": "string", "example": "800 4673" },
+          "message": { "type": "string" }
+        }
+      },
+      "KnowledgeSourceDto": {
+        "type": "object",
+        "required": ["sourceId", "title", "organization", "publicationDate", "version"],
+        "properties": {
+          "sourceId": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "organization": { "type": "string" },
+          "publicationDate": { "type": "string", "format": "date" },
+          "version": { "type": "string" },
+          "allowedTopicTags": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gibo Daily Plan & Action Engine API",
+    "version": "1.0.0",
+    "description": "Contracts for daily plan generation, curated multi-factor task selection, dual-mode completion, and idempotent offline synchronization for Abu Dhabi health companion."
+  },
+  "paths": {
+    "/api/v1/plans/today": {
+      "get": {
+        "summary": "Get Today's Active Daily Plan",
+        "description": "Retrieves today's generated daily plan and task instances for the authenticated user based on Asia/Dubai calendar date.",
+        "responses": {
+          "200": {
+            "description": "Active daily plan successfully retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyPlanDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Plan not yet generated for today",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/generate": {
+      "post": {
+        "summary": "Generate or Refresh Today's Plan",
+        "description": "Executes the 5-factor deterministic ranking algorithm over curated task templates to generate today's 1-3 micro-actions.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePlanRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Existing plan retrieved idempotently",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyPlanDto"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Plan generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyPlanDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{taskId}/complete": {
+      "post": {
+        "summary": "Record Task Completion",
+        "description": "Records task execution via manual tap or Health Connect background sync. Grants 10 XP equally.",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteTaskRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task completion recorded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCompletionResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation or state conflict error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{taskId}/swap": {
+      "post": {
+        "summary": "Swap Task for Alternative",
+        "description": "Replaces an active task with an approved alternative from the same domain without penalty.",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapTaskRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task swapped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskInstanceDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/sync-offline": {
+      "post": {
+        "summary": "Batch Synchronize Offline Completion Events",
+        "description": "Flushes queued offline completion events safely with client event deduplication.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncOfflineEventsRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncOfflineEventsResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DailyPlanDto": {
+        "type": "object",
+        "required": ["planId", "planDate", "algorithmVersion", "tasks", "totalXpEarned"],
+        "properties": {
+          "planId": { "type": "string", "format": "uuid" },
+          "planDate": { "type": "string", "format": "date" },
+          "algorithmVersion": { "type": "string" },
+          "userEditsApplied": { "type": "boolean" },
+          "totalXpEarned": { "type": "integer" },
+          "tasks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TaskInstanceDto" }
+          }
+        }
+      },
+      "TaskInstanceDto": {
+        "type": "object",
+        "required": ["taskInstanceId", "taskTemplateId", "actionVerb", "title", "targetValue", "targetUnit", "estimatedMinutes", "state", "xpAwarded", "rationale"],
+        "properties": {
+          "taskInstanceId": { "type": "string", "format": "uuid" },
+          "taskTemplateId": { "type": "string", "format": "uuid" },
+          "domain": { "type": "string", "enum": ["Movement", "SleepRoutine", "Nutrition"] },
+          "actionVerb": { "type": "string" },
+          "title": { "type": "string" },
+          "targetValue": { "type": "number" },
+          "targetUnit": { "type": "string" },
+          "estimatedMinutes": { "type": "integer" },
+          "state": { "type": "string", "enum": ["Scheduled", "Completed", "Partial", "Skipped", "Expired", "Paused"] },
+          "evidenceSource": { "type": "string", "enum": ["Manual", "HealthConnect"], "nullable": true },
+          "xpAwarded": { "type": "integer" },
+          "rationale": { "type": "string" },
+          "isStarterFallback": { "type": "boolean" },
+          "displayOrder": { "type": "integer" }
+        }
+      },
+      "GeneratePlanRequestDto": {
+        "type": "object",
+        "properties": {
+          "forceRegenerate": { "type": "boolean", "default": false }
+        }
+      },
+      "CompleteTaskRequestDto": {
+        "type": "object",
+        "required": ["evidenceSource", "clientEventId"],
+        "properties": {
+          "evidenceSource": { "type": "string", "enum": ["Manual", "HealthConnect"] },
+          "measuredValue": { "type": "number", "nullable": true },
+          "clientEventId": { "type": "string", "format": "uuid" },
+          "recordedAtUtc": { "type": "string", "format": "date-time" }
+        }
+      },
+      "TaskCompletionResultDto": {
+        "type": "object",
+        "required": ["taskInstanceId", "state", "xpAwarded", "isDuplicate"],
+        "properties": {
+          "taskInstanceId": { "type": "string", "format": "uuid" },
+          "state": { "type": "string", "enum": ["Completed", "Partial"] },
+          "xpAwarded": { "type": "integer" },
+          "isDuplicate": { "type": "boolean" },
+          "completedAtUtc": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SwapTaskRequestDto": {
+        "type": "object",
+        "required": ["replacementTemplateId"],
+        "properties": {
+          "replacementTemplateId": { "type": "string", "format": "uuid" },
+          "reason": { "type": "string", "nullable": true }
+        }
+      },
+      "SyncOfflineEventsRequestDto": {
+        "type": "object",
+        "required": ["events"],
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["clientEventId", "taskInstanceId", "evidenceSource", "recordedAtUtc"],
+              "properties": {
+                "clientEventId": { "type": "string", "format": "uuid" },
+                "taskInstanceId": { "type": "string", "format": "uuid" },
+                "evidenceSource": { "type": "string", "enum": ["Manual", "HealthConnect"] },
+                "measuredValue": { "type": "number", "nullable": true },
+                "recordedAtUtc": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "SyncOfflineEventsResultDto": {
+        "type": "object",
+        "required": ["syncedCount", "duplicateCount"],
+        "properties": {
+          "syncedCount": { "type": "integer" },
+          "duplicateCount": { "type": "integer" }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "required": ["type", "title", "status"],
+        "properties": {
+          "type": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "detail": { "type": "string" }
+        }
+      }
+    }
+  }
+}

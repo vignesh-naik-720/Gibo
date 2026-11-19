@@ -1,0 +1,201 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gibo Adaptive Recovery Loop API",
+    "version": "1.0.0",
+    "description": "Endpoints for empathetic barrier check-ins, dynamic plan adaptations, absence re-entry, and clinical safety escalation for Abu Dhabi."
+  },
+  "paths": {
+    "/api/v1/recovery/barriers": {
+      "post": {
+        "summary": "Submit Barrier Check-In",
+        "description": "Records user reflection on what prevented task completion, awards 2 XP, and evaluates adaptation matrix.",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SubmitBarrierRequestDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Barrier recorded and adaptation proposed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BarrierCheckInResponseDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recovery/adaptations/{adaptationId}/respond": {
+      "post": {
+        "summary": "Respond to Plan Adaptation",
+        "description": "Accepts or declines a proposed recovery modification (reduce size, time shift, indoor alternative).",
+        "parameters": [
+          {
+            "name": "adaptationId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RespondAdaptationRequestDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response recorded and plan updated if accepted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PlanAdaptationDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recovery/reentry": {
+      "get": {
+        "summary": "Check Absence Re-entry Status",
+        "description": "Checks if the user has been inactive for 7+ days and provides a warm restart payload.",
+        "responses": {
+          "200": {
+            "description": "Re-entry status payload",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReEntryStatusDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recovery/safety/resolve": {
+      "post": {
+        "summary": "Resolve Safety Pause",
+        "description": "User self-attestation that they have recovered from illness or injury and are cleared for light activity.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ResolveSafetyRequestDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Safety hold resolved and starter plan restored",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SafetyResolutionResponseDto" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SubmitBarrierRequestDto": {
+        "type": "object",
+        "required": ["taskInstanceId", "category"],
+        "properties": {
+          "taskInstanceId": { "type": "string", "format": "uuid" },
+          "category": {
+            "type": "string",
+            "enum": ["TimingConflict", "TooDifficult", "LowEnergy", "AccessOrWeather", "Forgot", "UnwellOrPain", "PreferNotToSay"]
+          },
+          "userNote": { "type": "string", "nullable": true }
+        }
+      },
+      "BarrierCheckInResponseDto": {
+        "type": "object",
+        "required": ["feedbackId", "xpAwarded", "isSafetyHaltActive"],
+        "properties": {
+          "feedbackId": { "type": "string", "format": "uuid" },
+          "xpAwarded": { "type": "integer" },
+          "isSafetyHaltActive": { "type": "boolean" },
+          "adaptation": { "$ref": "#/components/schemas/PlanAdaptationDto", "nullable": true },
+          "emergencyGuidance": { "$ref": "#/components/schemas/EmergencyGuidanceDto", "nullable": true }
+        }
+      },
+      "PlanAdaptationDto": {
+        "type": "object",
+        "required": ["adaptationId", "adaptationType", "originalTarget", "adaptedTarget", "targetUnit", "suggestedInstruction", "status"],
+        "properties": {
+          "adaptationId": { "type": "string", "format": "uuid" },
+          "adaptationType": {
+            "type": "string",
+            "enum": ["ReduceTargetSize", "RescheduleWindow", "ReplaceWithLowEnergyAlternative", "ConvertToIndoorAlternative", "TemporaryPause", "SafetyHalt"]
+          },
+          "originalTarget": { "type": "number" },
+          "adaptedTarget": { "type": "number" },
+          "targetUnit": { "type": "string" },
+          "suggestedInstruction": { "type": "string" },
+          "status": { "type": "string", "enum": ["Proposed", "Accepted", "Declined"] }
+        }
+      },
+      "EmergencyGuidanceDto": {
+        "type": "object",
+        "required": ["message", "ambulanceNumber", "telehealthNumber"],
+        "properties": {
+          "message": { "type": "string" },
+          "ambulanceNumber": { "type": "string", "example": "998" },
+          "telehealthNumber": { "type": "string", "example": "800 50" },
+          "supportCenterNumber": { "type": "string", "example": "800 1717" }
+        }
+      },
+      "RespondAdaptationRequestDto": {
+        "type": "object",
+        "required": ["accept"],
+        "properties": {
+          "accept": { "type": "boolean" },
+          "customTarget": { "type": "number", "nullable": true }
+        }
+      },
+      "ReEntryStatusDto": {
+        "type": "object",
+        "required": ["isReturningAfterGap", "daysInactive", "totalXpPreserved"],
+        "properties": {
+          "isReturningAfterGap": { "type": "boolean" },
+          "daysInactive": { "type": "integer" },
+          "totalXpPreserved": { "type": "integer" },
+          "welcomeMessage": { "type": "string" },
+          "suggestedRestartLevel": { "type": "string", "enum": ["Gentle", "Standard"] }
+        }
+      },
+      "ResolveSafetyRequestDto": {
+        "type": "object",
+        "required": ["isClearedForActivity"],
+        "properties": {
+          "isClearedForActivity": { "type": "boolean" }
+        }
+      },
+      "SafetyResolutionResponseDto": {
+        "type": "object",
+        "required": ["success", "message"],
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  }
+}

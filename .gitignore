@@ -1,0 +1,28 @@
+# .gitignore - Gibo Project
+
+# Node / React Native
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.*.local
+.expo/
+.metro/
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+packages/
+*.nupkg
+TestResults/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/

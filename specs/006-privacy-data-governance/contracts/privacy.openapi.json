@@ -1,0 +1,136 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gibo Privacy & Data Governance API",
+    "version": "1.0.0",
+    "description": "Contracts for UAE PDPL consent management, portable data export, and verified account erasure."
+  },
+  "paths": {
+    "/api/v1/privacy/consents": {
+      "get": {
+        "summary": "Get Active Consents",
+        "description": "Lists all granular consent categories and their current grant/revocation status.",
+        "responses": {
+          "200": {
+            "description": "List of user consents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ConsentItemDto" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy/consents/{category}/revoke": {
+      "post": {
+        "summary": "Revoke Specific Consent Category",
+        "description": "Immediately halts data collection for the category and severs device tokens if applicable.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["HealthConnectSync", "AssistantChatContext", "AnonymousResearch"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consent revoked successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ConsentItemDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy/export": {
+      "post": {
+        "summary": "Export User Data Dossier",
+        "description": "Generates a structured, portable JSON dossier of the user's complete data record (PDPL Article 14).",
+        "responses": {
+          "200": {
+            "description": "User portable data package",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserDataExportDto" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy/account": {
+      "delete": {
+        "summary": "Delete Account and Purge PII",
+        "description": "Executes an atomic transaction purging user profiles, device connections, and habit records (PDPL Article 15).",
+        "parameters": [
+          {
+            "name": "confirmation",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "example": "CONFIRM_DELETE" }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Account and all associated records permanently purged"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ConsentItemDto": {
+        "type": "object",
+        "required": ["category", "purpose", "isGranted", "grantedAtUtc"],
+        "properties": {
+          "category": { "type": "string", "enum": ["CoreProfile", "HealthConnectSync", "AssistantChatContext", "AnonymousResearch"] },
+          "purpose": { "type": "string" },
+          "policyVersion": { "type": "string" },
+          "isGranted": { "type": "boolean" },
+          "grantedAtUtc": { "type": "string", "format": "date-time" },
+          "revokedAtUtc": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "UserDataExportDto": {
+        "type": "object",
+        "required": ["userId", "exportTimestampUtc", "profile", "consents", "habitSummary", "totalXpEarned"],
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "exportTimestampUtc": { "type": "string", "format": "date-time" },
+          "profile": {
+            "type": "object",
+            "properties": {
+              "preferredLocale": { "type": "string" },
+              "timezone": { "type": "string" },
+              "createdAtUtc": { "type": "string", "format": "date-time" }
+            }
+          },
+          "consents": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConsentItemDto" }
+          },
+          "habitSummary": {
+            "type": "object",
+            "properties": {
+              "totalActionsCompleted": { "type": "integer" },
+              "totalBarriersLogged": { "type": "integer" },
+              "primaryDomain": { "type": "string" }
+            }
+          },
+          "totalXpEarned": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

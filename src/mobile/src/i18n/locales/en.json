@@ -1,0 +1,93 @@
+{
+  "common": {
+    "appName": "Gibo",
+    "tagline": "Healthy habits that adapt. Progress that survives real life.",
+    "continue": "Continue",
+    "back": "Back",
+    "skip": "Skip",
+    "preferNotToSay": "Prefer not to say",
+    "accept": "Accept",
+    "swap": "Swap Action",
+    "reduce": "Reduce Target"
+  },
+  "welcome": {
+    "title": "Welcome to Gibo",
+    "subtitle": "An adaptive healthy-habit companion designed for real life in Abu Dhabi.",
+    "disclaimer": "Gibo supports general daily wellness and is not a clinical medical service or diagnostic tool.",
+    "selectLanguage": "Select your language:"
+  },
+  "eligibility": {
+    "title": "Age Verification",
+    "question": "Are you 18 years of age or older?",
+    "yesAdult": "Yes, I am 18 or older",
+    "noUnderage": "No, I am under 18",
+    "underageMessage": "Gibo is currently designed for adults (18+). If you are under 18, please consult with a parent, guardian, or healthcare provider for age-appropriate wellness guidance."
+  },
+  "consent": {
+    "title": "Privacy & Data Choices",
+    "subtitle": "You are in control. Choose which data permissions to grant. You can change these anytime in settings.",
+    "coreProfile": {
+      "title": "Account & Profile",
+      "desc": "Stores your chosen goals, schedules, and daily habits securely. Required for Gibo to function."
+    },
+    "healthConnect": {
+      "title": "Wearable & Step Sync",
+      "desc": "Optionally reads steps from Android Health Connect. Manual check-in always earns equal XP without a wearable."
+    },
+    "chatContext": {
+      "title": "Wellness Assistant History",
+      "desc": "Remembers past conversation context to improve assistance. Never used for advertising."
+    },
+    "research": {
+      "title": "Anonymized Public Health Insights",
+      "desc": "Contributes de-identified, aggregated behavior stats to community wellness studies."
+    }
+  },
+  "goals": {
+    "title": "What would you like to build?",
+    "subtitle": "Choose one primary focus to start. Small steps build lasting routines.",
+    "movement": {
+      "name": "Movement",
+      "desc": "Gentle daily walking, stretching, and physical activity."
+    },
+    "sleep": {
+      "name": "Sleep Routine",
+      "desc": "Consistent bedtime cues, wind-downs, and screen-free evenings."
+    },
+    "nutrition": {
+      "name": "Nutrition",
+      "desc": "Adding vegetables, hydration, and mindful meal habits."
+    }
+  },
+  "constraints": {
+    "title": "Your Daily Realities",
+    "subtitle": "Tell us what your days look like so tasks fit your schedule.",
+    "workPattern": "Work Schedule",
+    "standardDay": "Standard Daytime",
+    "shiftWork": "Shift Work / Rotating",
+    "flexible": "Flexible / Variable",
+    "indoorOutdoor": "Weather & Environment",
+    "preferIndoor": "Prefer indoor activities (air-conditioned)",
+    "outdoorOk": "Comfortable with outdoor morning/evening walks",
+    "dailyCap": "Daily Action Cap",
+    "capOne": "1 micro-action per day (Recommended for starting)",
+    "capTwo": "2 micro-actions per day",
+    "capThree": "3 micro-actions per day"
+  },
+  "baseline": {
+    "title": "Starting Comfort",
+    "subtitle": "Where does your body feel comfortable starting today?",
+    "starter": "Starter (5–10 minutes gentle movement)",
+    "intermediate": "Standard (15–20 minutes daily activity)",
+    "active": "Active (Regular physical workouts)",
+    "restrictionsHeader": "Mobility or Health Considerations (Optional)",
+    "restrictionsNotice": "If you have joint discomfort, cardiovascular considerations, or pregnancy, Gibo will automatically filter out strenuous tasks and recommend physician consultation."
+  },
+  "firstPlan": {
+    "title": "Your First Daily Step",
+    "subtitle": "Here is one small, realistic action tailored to your preferences. You can adjust it before you begin.",
+    "evidenceMode": "Evidence mode: Manual Check-in (10 XP)",
+    "whyItFits": "Why this fits you",
+    "startJourney": "Start My Journey"
+  }
+}

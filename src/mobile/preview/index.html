@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gibo Mobile Preview - Abu Dhabi Health Companion</title>
+  <style>
+    :root {
+      --bg: #0F172A;
+      --card-bg: #1E293B;
+      --card-border: #334155;
+      --primary: #06B6D4;
+      --primary-hover: #0891B2;
+      --accent: #10B981;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #020617;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* Mobile Container Frame */
+    .phone-frame {
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      max-height: 900px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+
+    @media (min-width: 500px) {
+      .phone-frame {
+        border-radius: 40px;
+        border: 8px solid #1E293B;
+        height: 860px;
+      }
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      z-index: 10;
+      background: var(--bg);
+    }
+
+    .status-bar-pill {
+      background: #06B6D420;
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+    }
+
+    /* Screen Content */
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .screen-header {
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .badge-primary { background: rgba(6, 182, 212, 0.15); color: var(--primary); border: 1px solid rgba(6, 182, 212, 0.3); }
+    .badge-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-success { background: rgba(16, 185, 129, 0.15); color: var(--accent); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    p.subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Cards & Options */
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .option-card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .option-card:hover {
+      border-color: rgba(6, 182, 212, 0.5);
+    }
+
+    .option-card.selected {
+      border-color: var(--primary);
+      background: rgba(6, 182, 212, 0.1);
+    }
+
+    .option-icon {
+      font-size: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .option-info {
+      flex: 1;
+    }
+
+    .option-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .option-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      margin-top: 12px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #0F172A;
+    }
+    .btn-primary:active { background: var(--primary-hover); transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Checkbox list */
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 14px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .checkbox-item.checked {
+      border-color: var(--primary);
+      background: rgba(6, 182, 212, 0.08);
+    }
+    .custom-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      flex-shrink: 0;
+      font-size: 14px;
+      color: #0F172A;
+      font-weight: 900;
+    }
+    .checkbox-item.checked .custom-check {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* RTL Support */
+    [dir="rtl"] {
+      text-align: right;
+    }
+    [dir="rtl"] .status-bar {
+      flex-direction: row-reverse;
+    }
+    [dir="rtl"] .option-card {
+      flex-direction: row-reverse;
+    }
+    [dir="rtl"] .checkbox-item {
+      flex-direction: row-reverse;
+    }
+
+    /* Lang pills */
+    .lang-switcher {
+      display: flex;
+      gap: 8px;
+      background: #1E293B;
+      padding: 4px;
+      border-radius: 24px;
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+    .lang-pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+    }
+    .lang-pill.active {
+      background: var(--primary);
+      color: #0F172A;
+    }
+
+    /* Plan card highlight */
+    .preview-card {
+      background: linear-gradient(135deg, #1E293B 0%, #0F2E3D 100%);
+      border: 2px solid var(--primary);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .preview-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .preview-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 8px 0;
+      color: #FFF;
+    }
+    .preview-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-frame" id="phoneContainer">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-bar-pill">GIBO • Abu Dhabi</span>
+      <span>5G 100%</span>
+    </div>
+
+    <!-- Active Screen Injected Here -->
+    <div id="screenMount" class="screen-content"></div>
+  </div>
+
+  <script>
+    // State Store
+    const state = {
+      lang: 'en',
+      step: 'welcome',
+      isAdult: false,
+      consents: {
+        core: true,
+        health: false,
+        ai: false,
+        research: false
+      },
+      goal: 'Movement',
+      environment: 'indoor',
+      timeBudget: '15m',
+      baseline: 'Beginner'
+    };
+
+    // Localization Strings
+    const i18n = {
+      en: {
+        welcomeTitle: "Progress that survives real life.",
+        welcomeSubtitle: "An adaptive health companion designed for Abu Dhabi. Habits that adjust to summer heat, shift patterns, and busy family schedules.",
+        getStarted: "Begin Onboarding",
+        ageTitle: "Are you 18 or older?",
+        ageSubtitle: "Under UAE Federal Health Data regulations, Gibo is tailored for adult self-care support.",
+        ageConfirm: "I confirm that I am 18 years of age or older.",
+        continue: "Continue",
+        back: "Back",
+        underageWarning: "Gibo is currently restricted to adults (18+). Underage registration is not permitted.",
+        consentTitle: "Privacy & Data Consent",
+        consentSubtitle: "You control your health data under the UAE Personal Data Protection Law (PDPL).",
+        consentCore: "Core Profile & Goals (Required for habit recommendations)",
+        consentHealth: "Apple Health / Health Connect Sync (Read step count)",
+        consentAi: "Grounded AI Chat Assistant (Contextual guidance)",
+        consentResearch: "Anonymous Quality Improvement",
+        goalTitle: "Choose your primary focus",
+        goalSubtitle: "Small, consistent wins compound over time. You can change this anytime.",
+        goalMovement: "Movement & Steps",
+        goalMovementDesc: "Beat sedentary inertia with indoor walking and climate-adapted mobility.",
+        goalSleep: "Sleep Routine",
+        goalSleepDesc: "Wind-down habits and gentle digital sundowns for restorative rest.",
+        goalNutrition: "Nutrition & Hydration",
+        goalNutritionDesc: "Combat dehydration and maintain consistent energy throughout the day.",
+        contextTitle: "Your Lifestyle Context",
+        contextSubtitle: "Gibo adapts tasks to Abu Dhabi's climate and your real work schedule.",
+        envIndoor: "Air-Conditioned / Indoor preference",
+        envOutdoor: "Cool morning / Evening outdoor walking",
+        time10: "10 minutes / day",
+        time15: "15-20 minutes / day",
+        baselineTitle: "Current Activity Baseline",
+        baselineSubtitle: "Be honest — we meet you exactly where you are today without judgment.",
+        previewTitle: "Your Day 1 Action Plan",
+        previewSubtitle: "Here is your first small, climate-friendly habit to build momentum.",
+        day1Action: "15-Min Air-Conditioned Mall Walk",
+        day1Rationale: "Selected because you prefer indoor activities and have a 15-minute daily budget.",
+        commitDay1: "Commit to Day 1",
+        dashboardTitle: "Welcome to Gibo!",
+        dashboardSubtitle: "Your first plan is activated. Day 1 starts now in Abu Dhabi.",
+        restart: "Test Again (Reset Demo)"
+      },
+      ar: {
+        welcomeTitle: "تقدّم يتناسب مع واقع حياتك.",
+        welcomeSubtitle: "رفيق صحي متكيّف مصمم خصيصاً لأبوظبي. عادات تتكيّف مع حرارة الصيف، وساعات العمل المتغيرة، والالتزامات العائلية.",
+        getStarted: "ابدأ الآن",
+        ageTitle: "هل تبلغ 18 عاماً أو أكثر؟",
+        ageSubtitle: "وفقاً للتشريعات الصحية في دولة الإمارات، تم تصميم جيبو لدعم الرعاية الذاتية للبالغين.",
+        ageConfirm: "أؤكد أن عمري 18 عاماً أو أكثر.",
+        continue: "متابعة",
+        back: "رجوع",
+        underageWarning: "تطبيق جيبو مخصص حالياً للبالغين (18+). التسجيل لمن هم دون ذلك غير متاح.",
+        consentTitle: "الخصوصية والموافقة على البيانات",
+        consentSubtitle: "بياناتك الصحية ملكك تماماً تحت مظلة قانون حماية البيانات الشخصية الإماراتي.",
+        consentCore: "الملف التعريفي والأهداف الأساسية (مطلوب لتقديم التوصيات)",
+        consentHealth: "مزامنة أجهزة اللياقة / Health Connect (لقراءة عدد الخطوات)",
+        consentAi: "المساعد الذكي الموثوق (لتقديم التوجيه المخصص)",
+        consentResearch: "تحسين الجودة مجهول الهوية",
+        goalTitle: "اختر مسارك الصحي الأساسي",
+        goalSubtitle: "خطوات صغيرة مستمرة تصنع فارقاً حقيقياً مع الوقت. يمكنك التبديل لاحقاً.",
+        goalMovement: "الحركة والنشاط اليومي",
+        goalMovementDesc: "تجاوز الخمول مع مسارات مشي مكيّفة تلائم مناخ أبوظبي.",
+        goalSleep: "روتين النوم والراحة",
+        goalSleepDesc: "عادات الاسترخاء التدريجي لنوم عميق ومجدد للطاقة.",
+        goalNutrition: "التغذية والترطيب",
+        goalNutritionDesc: "الحفاظ على شرب الماء ومستويات الطاقة طوال اليوم.",
+        contextTitle: "نمط حياتك وظروفك",
+        contextSubtitle: "جيبو يصمم الخطط بما يتوافق مع مناخ أبوظبي وجدول أعمالك الفعلي.",
+        envIndoor: "تفضيل الأماكن الداخلية المكيّفة",
+        envOutdoor: "المشي الصباحي أو المسائي في الهواء الطلق",
+        time10: "10 دقائق يومياً",
+        time15: "15-20 دقيقة يومياً",
+        baselineTitle: "مستوى نشاطك الحالي",
+        baselineSubtitle: "كن صريحاً — نحن نبدأ معك من حيث أنت اليوم دون أي أحكام.",
+        previewTitle: "خطة يومك الأول المقترحة",
+        previewSubtitle: "إليك عادتك الصحية الأولى المصممة لتناسب جدولك ومناخك اليوم.",
+        day1Action: "مشي لمدة 15 دقيقة داخل مركز تسوق مكيّف",
+        day1Rationale: "تم اختيار هذا النشاط بناءً على تفضيلك للأنشطة الداخلية ووقتك المتاح (15 دقيقة).",
+        commitDay1: "اعتماد خطة اليوم الأول",
+        dashboardTitle: "أهلاً بك في جيبو!",
+        dashboardSubtitle: "تم تفعيل خطتك بنجاح. يومك الأول يبدأ الآن في أبوظبي.",
+        restart: "إعادة التجربة من البداية"
+      },
+      hi: {
+        welcomeTitle: "प्रगति जो वास्तविक जीवन में टिके।",
+        welcomeSubtitle: "अबू धाबी के लिए डिज़ाइन किया गया एक अनुकूली स्वास्थ्य साथी। आदतें जो गर्मी और व्यस्त दिनचर्या के अनुकूल बनती हैं।",
+        getStarted: "शुरू करें",
+        ageTitle: "क्या आपकी उम्र 18 वर्ष या उससे अधिक है?",
+        ageSubtitle: "यूएई स्वास्थ्य नियमों के तहत, गीबो केवल वयस्कों की स्व-देखभाल सहायता के लिए है।",
+        ageConfirm: "मैं पुष्टि करता हूँ कि मेरी आयु 18 वर्ष या उससे अधिक है।",
+        continue: "आगे बढ़ें",
+        back: "वापस",
+        underageWarning: "गीबो वर्तमान में वयस्कों (18+) तक सीमित है।",
+        consentTitle: "गोपनीयता और डेटा सहमति",
+        consentSubtitle: "यूएई डेटा संरक्षण कानून (PDPL) के तहत आपके डेटा पर आपका पूरा नियंत्रण है।",
+        consentCore: "प्रोफ़ाइल और लक्ष्य (सुझावों के लिए आवश्यक)",
+        consentHealth: "हेल्थ कनेक्ट सिंक (कदमों की गिनती के लिए)",
+        consentAi: "एआई सहायक (प्रासंगिक मार्गदर्शन)",
+        consentResearch: "गुमनाम अनुसंधान",
+        goalTitle: "अपना मुख्य लक्ष्य चुनें",
+        goalSubtitle: "छोटी, लगातार आदतें बड़ा परिणाम देती हैं। इसे कभी भी बदला जा सकता है।",
+        goalMovement: "गतिशीलता और चलना",
+        goalMovementDesc: "अबू धाबी के वातानुकूलित इनडोर स्थानों में आसान चलना।",
+        goalSleep: "नींद की दिनचर्या",
+        goalSleepDesc: "गहरी और शांतिपूर्ण नींद के लिए सोने से पहले की आदतें।",
+        goalNutrition: "पोषण और हाइड्रेशन",
+        goalNutritionDesc: "दिनभर ऊर्जा और पानी का सही संतुलन बनाए रखें।",
+        contextTitle: "आपकी जीवनशैली",
+        contextSubtitle: "गीबो मौसम और आपके काम के समय के अनुसार योजना बनाता है।",
+        envIndoor: "वातानुकूलित / इनडोर प्राथमिकता",
+        envOutdoor: "सुबह या शाम को बाहर चलना",
+        time10: "10 मिनट प्रतिदिन",
+        time15: "15-20 मिनट प्रतिदिन",
+        baselineTitle: "वर्तमान गतिविधि स्तर",
+        baselineSubtitle: "हम बिना किसी निर्णय के आपके वर्तमान स्तर से शुरुआत करते हैं।",
+        previewTitle: "आपके पहले दिन की योजना",
+        previewSubtitle: "शुरुआत करने के लिए आपकी पहली छोटी और आसान आदत।",
+        day1Action: "15 मिनट एसी मॉल में वॉक",
+        day1Rationale: "चुना गया क्योंकि आप इनडोर पसंद करते हैं और आपके पास 15 मिनट हैं।",
+        commitDay1: "पहला दिन स्वीकार करें",
+        dashboardTitle: "गीबो में आपका स्वागत है!",
+        dashboardSubtitle: "आपकी योजना सक्रिय हो गई है। पहला दिन शुरू होता है।",
+        restart: "पुनः परीक्षण करें"
+      }
+    };
+
+    function t(key) {
+      return i18n[state.lang][key] || i18n['en'][key] || key;
+    }
+
+    function setLanguage(lang) {
+      state.lang = lang;
+      const frame = document.getElementById('phoneContainer');
+      if (lang === 'ar') {
+        frame.setAttribute('dir', 'rtl');
+      } else {
+        frame.setAttribute('dir', 'ltr');
+      }
+      render();
+    }
+
+    function renderLanguageSwitcher() {
+      return `
+        <div class="lang-switcher">
+          <button class="lang-pill ${state.lang === 'en' ? 'active' : ''}" onclick="setLanguage('en')">English</button>
+          <button class="lang-pill ${state.lang === 'ar' ? 'active' : ''}" onclick="setLanguage('ar')">العربية</button>
+          <button class="lang-pill ${state.lang === 'hi' ? 'active' : ''}" onclick="setLanguage('hi')">हिन्दी</button>
+        </div>
+      `;
+    }
+
+    function render() {
+      const mount = document.getElementById('screenMount');
+
+      switch (state.step) {
+        case 'welcome':
+          mount.innerHTML = `
+            <div>
+              ${renderLanguageSwitcher()}
+              <div class="screen-header">
+                <span class="badge badge-primary">Abu Dhabi Edition</span>
+                <h1>${t('welcomeTitle')}</h1>
+                <p class="subtitle">${t('welcomeSubtitle')}</p>
+              </div>
+              <div class="options-grid">
+                <div class="option-card selected">
+                  <div class="option-icon">🏃</div>
+                  <div class="option-info">
+                    <div class="option-title">1–3 Micro-habits</div>
+                    <div class="option-desc">Curated daily actions that take less than 15 minutes.</div>
+                  </div>
+                </div>
+                <div class="option-card selected">
+                  <div class="option-icon">☀️</div>
+                  <div class="option-info">
+                    <div class="option-title">Weather & Heat Adapted</div>
+                    <div class="option-desc">Tailored indoor and shaded activities when heat peaks.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="state.step = 'age'; render();">${t('getStarted')} →</button>
+            </div>
+          `;
+          break;
+
+        case 'age':
+          mount.innerHTML = `
+            <div>
+              <div class="screen-header">
+                <span class="badge badge-warning">18+ UAE Requirement</span>
+                <h1>${t('ageTitle')}</h1>
+                <p class="subtitle">${t('ageSubtitle')}</p>
+              </div>
+              <div class="options-grid">
+                <div class="checkbox-item ${state.isAdult ? 'checked' : ''}" onclick="state.isAdult = !state.isAdult; render();">
+                  <div class="custom-check">${state.isAdult ? '✓' : ''}</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('ageConfirm')}</div>
+                    <div class="option-desc">UAE Federal Law No. 2 of 2019 (Health ICT Law) & PDPL.</div>
+                  </div>
+                </div>
+              </div>
+              ${!state.isAdult ? `<p style="color: var(--danger); font-size: 13px; margin-top: 10px;">${t('underageWarning')}</p>` : ''}
+            </div>
+            <div>
+              <button class="btn btn-primary" ${!state.isAdult ? 'disabled' : ''} onclick="state.step = 'consent'; render();">${t('continue')} →</button>
+              <button class="btn btn-secondary" onclick="state.step = 'welcome'; render();">← ${t('back')}</button>
+            </div>
+          `;
+          break;
+
+        case 'consent':
+          mount.innerHTML = `
+            <div>
+              <div class="screen-header">
+                <span class="badge badge-primary">UAE PDPL Compliance</span>
+                <h1>${t('consentTitle')}</h1>
+                <p class="subtitle">${t('consentSubtitle')}</p>
+              </div>
+              <div class="options-grid">
+                <div class="checkbox-item checked">
+                  <div class="custom-check">✓</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('consentCore')}</div>
+                    <div class="option-desc">Essential for generating personalized habit options.</div>
+                  </div>
+                </div>
+                <div class="checkbox-item ${state.consents.health ? 'checked' : ''}" onclick="state.consents.health = !state.consents.health; render();">
+                  <div class="custom-check">${state.consents.health ? '✓' : ''}</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('consentHealth')}</div>
+                    <div class="option-desc">Optional passive verification of step goals.</div>
+                  </div>
+                </div>
+                <div class="checkbox-item ${state.consents.ai ? 'checked' : ''}" onclick="state.consents.ai = !state.consents.ai; render();">
+                  <div class="custom-check">${state.consents.ai ? '✓' : ''}</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('consentAi')}</div>
+                    <div class="option-desc">Zero training on identifiable user prompts.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="state.step = 'goal'; render();">${t('continue')} →</button>
+              <button class="btn btn-secondary" onclick="state.step = 'age'; render();">← ${t('back')}</button>
+            </div>
+          `;
+          break;
+
+        case 'goal':
+          mount.innerHTML = `
+            <div>
+              <div class="screen-header">
+                <span class="badge badge-primary">Step 3 of 5</span>
+                <h1>${t('goalTitle')}</h1>
+                <p class="subtitle">${t('goalSubtitle')}</p>
+              </div>
+              <div class="options-grid">
+                <div class="option-card ${state.goal === 'Movement' ? 'selected' : ''}" onclick="state.goal = 'Movement'; render();">
+                  <div class="option-icon">🚶</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('goalMovement')}</div>
+                    <div class="option-desc">${t('goalMovementDesc')}</div>
+                  </div>
+                </div>
+                <div class="option-card ${state.goal === 'SleepRoutine' ? 'selected' : ''}" onclick="state.goal = 'SleepRoutine'; render();">
+                  <div class="option-icon">🌙</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('goalSleep')}</div>
+                    <div class="option-desc">${t('goalSleepDesc')}</div>
+                  </div>
+                </div>
+                <div class="option-card ${state.goal === 'Nutrition' ? 'selected' : ''}" onclick="state.goal = 'Nutrition'; render();">
+                  <div class="option-icon">🥗</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('goalNutrition')}</div>
+                    <div class="option-desc">${t('goalNutritionDesc')}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="state.step = 'context'; render();">${t('continue')} →</button>
+              <button class="btn btn-secondary" onclick="state.step = 'consent'; render();">← ${t('back')}</button>
+            </div>
+          `;
+          break;
+
+        case 'context':
+          mount.innerHTML = `
+            <div>
+              <div class="screen-header">
+                <span class="badge badge-primary">Step 4 of 5</span>
+                <h1>${t('contextTitle')}</h1>
+                <p class="subtitle">${t('contextSubtitle')}</p>
+              </div>
+              <div class="options-grid">
+                <div class="option-card ${state.environment === 'indoor' ? 'selected' : ''}" onclick="state.environment = 'indoor'; render();">
+                  <div class="option-icon">🏢</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('envIndoor')}</div>
+                    <div class="option-desc">Ideal for summer months & mid-day active breaks.</div>
+                  </div>
+                </div>
+                <div class="option-card ${state.environment === 'outdoor' ? 'selected' : ''}" onclick="state.environment = 'outdoor'; render();">
+                  <div class="option-icon">🌴</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('envOutdoor')}</div>
+                    <div class="option-desc">Corniche, parks, or evening cooler breezes.</div>
+                  </div>
+                </div>
+                <div class="option-card ${state.timeBudget === '15m' ? 'selected' : ''}" onclick="state.timeBudget = '15m'; render();">
+                  <div class="option-icon">⏱️</div>
+                  <div class="option-info">
+                    <div class="option-title">${t('time15')}</div>
+                    <div class="option-desc">Recommended for sustainable consistency.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="state.step = 'preview'; render();">${t('continue')} →</button>
+              <button class="btn btn-secondary" onclick="state.step = 'goal'; render();">← ${t('back')}</button>
+            </div>
+          `;
+          break;
+
+        case 'preview':
+          mount.innerHTML = `
+            <div>
+              <div class="screen-header">
+                <span class="badge badge-success">Personalized for Abu Dhabi</span>
+                <h1>${t('previewTitle')}</h1>
+                <p class="subtitle">${t('previewSubtitle')}</p>
+              </div>
+              <div class="preview-card">
+                <div class="preview-tag">Day 1 Action</div>
+                <div class="preview-title">${state.goal === 'Movement' ? t('day1Action') : state.goal === 'SleepRoutine' ? 'Digital Sundown (Phone screen off 30m before bed)' : 'Hydration Kickstart (500ml water at start of shift)'}</div>
+                <p style="font-size: 14px; color: #CBD5E1; line-height: 1.4;">${t('day1Rationale')}</p>
+                <div class="preview-meta">
+                  <span>⏱️ 15 mins</span>
+                  <span>📍 Indoor / Mall / AC</span>
+                  <span>⚡ 10 XP</span>
+                </div>
+              </div>
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 14px; border-radius: 12px; margin-top: 10px;">
+                <p style="font-size: 13px; color: #6EE7B7;">✓ Backend verification & idempotency token validated.</p>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="state.step = 'dashboard'; render();">${t('commitDay1')} 🚀</button>
+              <button class="btn btn-secondary" onclick="state.step = 'context'; render();">← ${t('back')}</button>
+            </div>
+          `;
+          break;
+
+        case 'dashboard':
+          mount.innerHTML = `
+            <div style="text-align: center; margin: auto 0;">
+              <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+              <h1 style="color: var(--accent);">${t('dashboardTitle')}</h1>
+              <p class="subtitle" style="margin-top: 10px;">${t('dashboardSubtitle')}</p>
+              <div style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 16px; margin: 24px 0; text-align: left;">
+                <div style="font-size: 13px; color: var(--primary); font-weight: 700;">CURRENT STREAK</div>
+                <div style="font-size: 24px; font-weight: 800; margin: 4px 0;">Day 1 Active</div>
+                <div style="font-size: 13px; color: var(--text-muted);">Abu Dhabi Time: Asia/Dubai</div>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-secondary" onclick="state.step = 'welcome'; render();">🔄 ${t('restart')}</button>
+            </div>
+          `;
+          break;
+      }
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
